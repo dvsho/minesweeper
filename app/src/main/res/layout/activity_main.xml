@@ -13,16 +13,13 @@
         android:adjustViewBounds="true"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintHorizontal_chainStyle="packed"
-        app:layout_constraintHorizontal_bias="0.3"
         android:layout_marginStart="64dp"
         android:layout_marginTop="8dp" />
 
     <TextView
-        android:id="@+id/mineCountView"
+        android:id="@+id/flagCountView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="10"
         android:textSize="32sp"
         app:layout_constraintStart_toEndOf="@id/flagIcon"
         app:layout_constraintTop_toTopOf="@id/flagIcon"
@@ -38,8 +35,6 @@
         android:adjustViewBounds="true"
         app:layout_constraintEnd_toStartOf="@+id/timerView"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintHorizontal_chainStyle="packed"
-        app:layout_constraintHorizontal_bias="0.7"
         android:layout_marginEnd="16dp"
         android:layout_marginTop="8dp" />
 
@@ -47,7 +42,6 @@
         android:id="@+id/timerView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="00:00"
         android:textSize="32sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/clockIcon"

@@ -20,7 +20,7 @@
         android:layout_below="@+id/resultView"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="16dp"
-        android:textSize="18sp" />
+        android:textSize="20sp" />
 
     <Button
         android:id="@+id/restartButton"

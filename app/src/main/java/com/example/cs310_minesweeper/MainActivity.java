@@ -14,16 +14,16 @@ import androidx.appcompat.app.AppCompatActivity;
 import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
-
+    // instance variables
     private static final int ROWS = 12;
     private static final int COLS = 10;
-    private static final int MINES = 4;
+    private static final int BOMBS = 4;
     private final Button[][] cells = new Button[ROWS][COLS];
-    private final boolean[][] mineLocations = new boolean[ROWS][COLS];
+    private final boolean[][] bombLocations = new boolean[ROWS][COLS];
     private boolean flagMode = false;
-    private int mineCount;
+    private int flagCount;
     private long startTime;
-    private TextView mineCountView;
+    private TextView flagCountView;
     private TextView timerView;
     private final Handler timerHandler = new Handler();
     private final Runnable timerRunnable = new Runnable() {
@@ -38,27 +38,29 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // initialize instance
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        mineCountView = findViewById(R.id.mineCountView);
+        flagCountView = findViewById(R.id.flagCountView);
         timerView = findViewById(R.id.timerView);
-        GridLayout gridLayout = findViewById(R.id.gridLayout);
         ImageView modeButton = findViewById(R.id.modeButton);
 
+        // initialize flag count
+        flagCount = BOMBS;
+        flagCountView.setText(String.valueOf(flagCount));
+
+        // initialize grid
+        GridLayout gridLayout = findViewById(R.id.gridLayout);
         gridLayout.removeAllViews();
         gridLayout.setColumnCount(COLS);
         gridLayout.setRowCount(ROWS);
-        mineCount = MINES;
-        mineCountView.setText(String.valueOf(mineCount));
-        Random random = new Random();
 
+        // initialize grid cells
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int screenWidth = displayMetrics.widthPixels;
         int cellWidth = screenWidth / (COLS + 2);
         int marginSize = 6;
-
         for (int i = 0; i < ROWS; i++) {
             for (int j = 0; j < COLS; j++) {
                 cells[i][j] = new Button(this);
@@ -73,21 +75,26 @@ public class MainActivity extends AppCompatActivity {
                 cells[i][j].setOnClickListener(view -> cellClicked(finalI, finalJ));
                 gridLayout.addView(cells[i][j]);
                 cells[i][j].setTextSize(10);
-                mineLocations[i][j] = false;
+                bombLocations[i][j] = false;
             }
         }
 
-        for (int i = 0; i < MINES; i++) {
+        // randomly place bombs
+        Random random = new Random();
+        for (int i = 0; i < BOMBS; i++) {
             int row, col;
             do {
                 row = random.nextInt(ROWS);
                 col = random.nextInt(COLS);
-            } while (mineLocations[row][col]);
-            mineLocations[row][col] = true;
+            } while (bombLocations[row][col]);
+            bombLocations[row][col] = true;
         }
 
+        // start timer
         startTime = System.currentTimeMillis();
         timerHandler.postDelayed(timerRunnable, 0);
+
+        // add button that changes between flag and mine mode
         modeButton.setOnClickListener(v -> {
             flagMode = !flagMode;
             modeButton.setImageResource(flagMode ? R.drawable.flag : R.drawable.pickaxe);
@@ -95,30 +102,41 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void cellClicked(int row, int col) {
+        // if user is in flag mode
         if (flagMode) {
-            if (mineCount > 0 || cells[row][col].getText().equals("'")) {
-                if (cells[row][col].getText().equals("'")) {
+            // ensure that user doesn't place more flags than there are bombs
+            if (flagCount > 0 || cells[row][col].getText().equals(".")) {
+                // remove flag
+                if (cells[row][col].getText().equals(".")) {
                     cells[row][col].setText("");
                     cells[row][col].setBackgroundColor(Color.GREEN);
-                    mineCount++;
+                    flagCount++;
                 }
+
+                // add flag
                 else {
-                    cells[row][col].setText("'");
+                    cells[row][col].setText(".");
+                    cells[row][col].setTextColor(Color.GREEN);
                     cells[row][col].setBackgroundResource(R.drawable.flag_cell);
-                    mineCount--;
+                    flagCount--;
                 }
-                mineCountView.setText(String.valueOf(mineCount));
+                flagCountView.setText(String.valueOf(flagCount));
             }
         }
-        else if (!cells[row][col].getText().equals("'")) {
-            if (mineLocations[row][col]) {
+
+        // if user is in mine mode and clicked non-flag cell
+        else if (!cells[row][col].getText().equals(".")) {
+            // if user clicked bomb
+            if (bombLocations[row][col]) {
                 gameOver(false);
             }
+            
+            // reveal cell and check if user has revealed all non-bomb cells
             else {
                 revealCell(row, col);
                 for (int i = 0; i < ROWS; i++) {
                     for (int j = 0; j < COLS; j++) {
-                        if (!mineLocations[i][j] && cells[i][j].isEnabled()) {
+                        if (!bombLocations[i][j] && cells[i][j].isEnabled()) {
                             return;
                         }
                     }
@@ -129,25 +147,33 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void revealCell(int row, int col) {
+        // if cell is already revealed
         if (!cells[row][col].isEnabled()) {
             return;
         }
-        if (cells[row][col].getText().equals("'")) {
-            mineCount++;
-            mineCountView.setText(String.valueOf(mineCount));
+
+        // if transitively revealed cell has flag
+        if (cells[row][col].getText().equals(".")) {
+            flagCount++;
+            flagCountView.setText(String.valueOf(flagCount));
         }
+
+        // disable cell
         cells[row][col].setEnabled(false);
         cells[row][col].setBackgroundColor(Color.LTGRAY);
-        int adjacentMines = 0;
+
+        // find number of adjacent bombs
+        int adjacentBombs = 0;
         for (int i = Math.max(0, row - 1); i <= Math.min(ROWS - 1, row + 1); i++) {
             for (int j = Math.max(0, col - 1); j <= Math.min(COLS - 1, col + 1); j++) {
-                if (mineLocations[i][j]) {
-                    adjacentMines++;
+                if (bombLocations[i][j]) {
+                    adjacentBombs++;
                 }
             }
         }
 
-        if (adjacentMines == 0) {
+        // reveal adjacent cells if there are no adjacent bombs
+        if (adjacentBombs == 0) {
             cells[row][col].setText("");
             for (int i = Math.max(0, row - 1); i <= Math.min(ROWS - 1, row + 1); i++) {
                 for (int j = Math.max(0, col - 1); j <= Math.min(COLS - 1, col + 1); j++) {
@@ -157,29 +183,36 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
+        
+        // show number of adjacent bombs
         else {
-            cells[row][col].setText(String.valueOf(adjacentMines));
+            cells[row][col].setText(String.valueOf(adjacentBombs));
             cells[row][col].setTextColor(Color.BLACK);
         }
     }
 
     private void gameOver(boolean won) {
+        // stop timer
         timerHandler.removeCallbacks(timerRunnable);
         long endTime = System.currentTimeMillis() - startTime;
+
+        // enable all cells to be clicked
         for (int i = 0; i < ROWS; i++) {
             for (int j = 0; j < COLS; j++) {
                 cells[i][j].setEnabled(true);
             }
         }
 
+        // reveal bomb locations
         for (int i = 0; i < ROWS; i++) {
             for (int j = 0; j < COLS; j++) {
-                if (mineLocations[i][j]) {
+                if (bombLocations[i][j]) {
                     cells[i][j].setBackgroundResource(R.drawable.bomb_cell);
                 }
             }
         }
 
+        // wait for user to click any cell and start result page
         View.OnClickListener listener = view -> {
             Intent intent = new Intent(MainActivity.this, ResultActivity.class);
             intent.putExtra("timeUsed", endTime);
@@ -187,7 +220,6 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
             finish();
         };
-
         for (int i = 0; i < ROWS; i++) {
             for (int j = 0; j < COLS; j++) {
                 cells[i][j].setOnClickListener(listener);
