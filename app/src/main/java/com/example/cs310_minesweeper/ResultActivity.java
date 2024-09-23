@@ -24,7 +24,7 @@ public class ResultActivity extends AppCompatActivity {
         timeView.setText("Time: " + seconds + " seconds");
 
         restartButton.setOnClickListener(v -> {
-            Intent intent = new Intent(ResultActivity.this, com.example.minesweeper.MainActivity.class);
+            Intent intent = new Intent(ResultActivity.this, MainActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
             finish();

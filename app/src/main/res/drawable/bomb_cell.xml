@@ -1,0 +1,14 @@
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#C0C0C0" /> <!-- Background color -->
+        </shape>
+    </item>
+    <item
+        android:drawable="@drawable/bomb"
+        android:top="5dp"
+        android:bottom="5dp"
+        android:left="5dp"
+        android:right="5dp">
+    </item>
+</layer-list>
