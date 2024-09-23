@@ -110,11 +110,11 @@ public class MainActivity extends AppCompatActivity {
                 mineCountView.setText(String.valueOf(mineCount));
             }
         }
-        else {
+        else if (!cells[row][col].getText().equals("'")) {
             if (mineLocations[row][col]) {
                 gameOver(false);
             }
-            else if (!cells[row][col].getText().equals("'")) {
+            else {
                 revealCell(row, col);
                 for (int i = 0; i < ROWS; i++) {
                     for (int j = 0; j < COLS; j++) {
@@ -159,6 +159,7 @@ public class MainActivity extends AppCompatActivity {
         }
         else {
             cells[row][col].setText(String.valueOf(adjacentMines));
+            cells[row][col].setTextColor(Color.BLACK);
         }
     }
 

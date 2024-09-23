@@ -21,7 +21,12 @@ public class ResultActivity extends AppCompatActivity {
 
         int seconds = (int) (timeUsed / 1000);
         resultView.setText(gameResult ? "You won!" : "You lost!");
-        timeView.setText("Time: " + seconds + " seconds");
+        if (seconds == 1) {
+            timeView.setText("Used " + seconds + " second.");
+        }
+        else {
+            timeView.setText("Used " + seconds + " seconds.");
+        }
 
         restartButton.setOnClickListener(v -> {
             Intent intent = new Intent(ResultActivity.this, MainActivity.class);
